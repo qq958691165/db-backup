@@ -1,0 +1,21 @@
+{
+  "name": "db-backup",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "backup": "node index.js backup"
+  },
+  "dependencies": {
+    "ali-oss": "^6.20.0",
+    "commander": "^12.0.0",
+    "consola": "^3.2.3",
+    "cross-env": "^7.0.3",
+    "glob": "^10.3.10",
+    "mysqldump": "^3.2.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
