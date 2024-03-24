@@ -1,5 +1,5 @@
 const {program} = require('commander');
-const genConfig = require('./src/utils/genConfig');
+const genConfig = require('./src/genConfig');
 const backup = require('./src/backup');
 
 program

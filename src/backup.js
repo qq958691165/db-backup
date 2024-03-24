@@ -1,7 +1,9 @@
 const path = require('path')
 const {globSync} = require('glob')
-const mysqldump = require('mysqldump')
+const databaseMap = require('./database')
+const storageMap = require('./storage')
 const log = require('./utils/log');
+const dayjs = require("dayjs");
 
 const backup = async ({name}) => {
     name = name || '*'
@@ -26,7 +28,7 @@ const backup = async ({name}) => {
             log.error('配置文件 ' + file.split(path.sep).at(-1) + ' 备份失败 ' + e)
         }
     }
-    log.success('全部备份完成')
+    log.success('全部运行完成')
 }
 
 
@@ -38,47 +40,36 @@ const backupByConfig = async (name, config) => {
         throw new Error('缺少存储配置 storage')
     }
 
-    const sql = await dumpDatabaseToSql(config.connection)
-
-    await saveToStorage(config.storage, name, sql)
-
+    const sql = await dumpDatabaseToSql({
+        config: config.connection
+    })
+    await saveToStorage({
+        config: config.storage,
+        name,
+        data: sql,
+    })
     log.success('备份成功 ' + name)
 }
 
-const dumpDatabaseToSql = async (connection) => {
-    switch (connection.type) {
-        case 'mysql':
-            const dump = await mysqldump({
-                host: connection.host,
-                port: connection.port,
-                user: connection.user,
-                password: connection.password,
-                database: connection.database,
-            })
-            return dump.dump.schema
-        default:
-            throw new Error('暂时不支持 ' + connection.type + ' 类型的数据库')
+const dumpDatabaseToSql = async ({config}) => {
+    if (!databaseMap[config.type]) {
+        throw new Error('暂时不支持 ' + config.type + ' 类型的数据库')
     }
+    return await databaseMap[config.type].dump({config})
 }
 
-const saveToStorage = async (storage, name, sql) => {
-    const date = new Date()
-    const filename = name + '_' + date.getFullYear() + date.getMonth() + date.getDate() + date.getHours() + date.getMinutes() + date.getSeconds() + '.sql'
+const saveToStorage = async ({config, name, data}) => {
+    const filename = name + '_' + dayjs().format('YYYYMMDDHHmmss') + '.sql'
 
-    switch (storage.type) {
-        case 'oss':
-            const OSS = require('ali-oss')
-            const client = new OSS({
-                region: storage.region,
-                accessKeyId: storage.accessKeyId,
-                accessKeySecret: storage.accessKeySecret,
-                bucket: storage.bucket,
-            })
-            await client.put(storage.prefix.replace(/\/$/, '') + '/' + filename, Buffer.from(sql))
-            break
-        default:
-            throw new Error('暂时不支持 ' + storage.type + ' 类型的存储')
+    if (!storageMap[config.type]) {
+        throw new Error('暂时不支持 ' + config.type + ' 类型的存储')
     }
+
+    await storageMap[config.type].save({
+        config,
+        filename,
+        data
+    })
 }
 
 module.exports = backup

@@ -4,14 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "backup": "node index.js backup"
+    "start": "node index.js"
   },
   "dependencies": {
     "ali-oss": "^6.20.0",
     "commander": "^12.0.0",
     "consola": "^3.2.3",
     "cross-env": "^7.0.3",
+    "dayjs": "^1.11.10",
     "glob": "^10.3.10",
     "mysqldump": "^3.2.0"
   },
