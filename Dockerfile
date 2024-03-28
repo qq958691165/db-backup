@@ -6,4 +6,4 @@ WORKDIR /app
 
 RUN yarn
 
-ENTRYPOINT ["yarn", "start", "backup"]
+ENTRYPOINT ["yarn", "start"]
